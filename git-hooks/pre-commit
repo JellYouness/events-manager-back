@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Execute PHP Code Beautifier
+echo "Auto-formatting code..."
+./vendor/bin/phpcbf .
+
+# Execute PHP CodeSniffer
+./vendor/bin/phpcs .
+
+# Check exit code
+if [ $? != 0 ]; then
+    echo "PHP_CodeSniffer errors detected. Commit aborted."
+    exit 1
+fi

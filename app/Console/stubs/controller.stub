@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\CrudController;
+use App\Models\{{ model }};
+
+class {{ model }}Controller extends CrudController
+{
+  protected $table = '{{ table }}';
+  protected $modelClass = {{ model }}::class;
+}

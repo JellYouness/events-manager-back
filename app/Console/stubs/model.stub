@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+{{ imports }}
+
+class {{ model }} extends Model
+{
+  protected $fillable = [
+    {{ fillable }}
+  ];
+  protected $casts = [
+    {{ casts }}
+  ];
+  {{ relations }}
+  public function rules()
+  {
+    $id = request()->route('id');
+    if ($id === null) {
+      return [];
+    } else {
+      return [];
+    }
+  }
+}

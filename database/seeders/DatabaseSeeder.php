@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
     if (env('APP_ENV') !== 'prod') {
       $seeders = array_merge($seeders, [
         UserSeeder::class,
+        EventSeeder::class,
       ]);
     }
     $this->call($seeders);

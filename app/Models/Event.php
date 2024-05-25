@@ -23,7 +23,7 @@ class Event extends BaseModel
         $id = $id ?? request()->route('id');
         return [
             'name' => 'required|string',
-            'date' => 'required|date',
+            'date' => 'required',
             'location' => 'required|string',
             'description' => 'required|string',
             'max_participants' => 'required|integer',

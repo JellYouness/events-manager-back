@@ -21,6 +21,8 @@ class EventSeeder extends Seeder
             'description' => 'Description 1',
             'max_participants' => 100,
             'image' => 'image1.jpg',
+            'is_canceled' => false,
+            'user_id' => 2
         ]);
 
         Event::firstOrCreate([
@@ -30,6 +32,8 @@ class EventSeeder extends Seeder
             'description' => 'Description 2',
             'max_participants' => 200,
             'image' => 'image2.jpg',
+            'is_canceled' => false,
+            'user_id' => 1
         ]);
 
         Event::firstOrCreate([
@@ -39,6 +43,8 @@ class EventSeeder extends Seeder
             'description' => 'Description 3',
             'max_participants' => 300,
             'image' => 'image3.jpg',
+            'is_canceled' => true,
+            'user_id' => 1
         ]);
 
         

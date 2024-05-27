@@ -51,6 +51,8 @@ Route::middleware('auth:api')->group(function () {
       Route::get('/{id}', 'readOne');
       Route::get('/', 'readAll');
       Route::put('/{id}', 'updateOne');
+      Route::put('/cancel/{id}', 'cancelOne');
+      Route::put('/restore/{id}', 'restoreOne');
       Route::delete('/{id}', 'deleteOne');
     });
   });

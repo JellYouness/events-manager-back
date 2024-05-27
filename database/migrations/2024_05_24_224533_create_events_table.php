@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('description');
             $table->integer('max_participants');
             $table->string('image')->nullable();
+            $table->boolean('is_canceled')->default(false);
             $table->timestamps();
         });
     }

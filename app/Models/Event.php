@@ -5,6 +5,7 @@ namespace App\Models;
 class Event extends BaseModel
 {
     public static $cacheKey = 'events';
+    protected $with = ['users'];
     protected $fillable = [
         'name',
         'date',
@@ -12,9 +13,14 @@ class Event extends BaseModel
         'description',
         'max_participants',
         'image',
+        'is_canceled'
     ];
 
     public function users()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function usersEvents()
     {
         return $this->belongsToMany(User::class, 'users_events');
     }
@@ -28,6 +34,7 @@ class Event extends BaseModel
             'description' => 'required|string',
             'max_participants' => 'required|integer',
             'image' => 'nullable|string',
+            'is_canceled' => 'boolean',
         ];
     }
 

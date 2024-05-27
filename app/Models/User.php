@@ -27,6 +27,7 @@ class User extends BaseModel implements
   use MustVerifyEmail;
 
   public static $cacheKey = 'users';
+  protected $with =['events'];
   protected $fillable = [
     'email',
     'password',
@@ -108,6 +109,11 @@ class User extends BaseModel implements
   }
 
   public function events()
+  {
+    return $this->hasMany(Event::class);
+  }
+
+  public function usersEvents()
   {
     return $this->belongsToMany(Event::class, 'users_events');
   }

@@ -29,6 +29,7 @@ class User extends BaseModel implements
   public static $cacheKey = 'users';
   protected $with =['events'];
   protected $fillable = [
+    'name',
     'email',
     'password',
   ];
@@ -169,6 +170,7 @@ class User extends BaseModel implements
   {
     $id = $id ?? request()->route('id');
     $rules = [
+      'name' => 'required|string',
       'role' => 'required|exists:roles,name',
       'email' => 'required|email|unique:users,email',
       'password' => 'required|string',

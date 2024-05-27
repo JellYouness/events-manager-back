@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\UserEventController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,7 +56,10 @@ Route::middleware('auth:api')->group(function () {
       Route::put('/restore/{id}', 'restoreOne');
       Route::delete('/{id}', 'deleteOne');
     });
-  });
+    Route::controller(UserEventController::class)->group(function () {
+      Route::post('/register/{id}', 'register');
+      Route::post('/unregister/{id}', 'unregister');
+    });
   Route::prefix('uploads')->name('uploads.')->group(function () {
     Route::controller(UploadController::class)->group(function () {
       Route::post('/', 'createOne');
@@ -65,6 +69,7 @@ Route::middleware('auth:api')->group(function () {
       Route::delete('/{id}', 'deleteOne');
     });
   });
+});
 });
 
 Route::get('/hello', function () {

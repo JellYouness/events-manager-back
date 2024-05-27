@@ -40,6 +40,23 @@ class EventController extends CrudController
     return parent::updateOne($id, $request);
   }
 
+  public function readOne($id, Request $request)
+  {
+    $item = Event::with('users:name')->find($id);
+
+    if (!$item) {
+      return response()->json([
+        'success' => false,
+        'errors' => [__(Str::of($this->table)->replace('_', '-') . '.not_found')]
+      ]);
+        }
+
+    return response()->json([
+      'success' => true,
+      'data' => ['item' => $item],
+    ]);
+  }
+
     public function cancelOne(Request $request, $id)
     {
         $event = $this->modelClass::findOrFail($id);

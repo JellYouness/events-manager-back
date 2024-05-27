@@ -51,6 +51,8 @@ Route::middleware('auth:api')->group(function () {
       Route::post('/', 'createOne');
       Route::get('/{id}', 'readOne');
       Route::get('/', 'readAll');
+      Route::get('/myevents/{id}', 'readOwn');
+      Route::get('/registered/{id}', 'readRegistered');
       Route::put('/{id}', 'updateOne');
       Route::put('/cancel/{id}', 'cancelOne');
       Route::put('/restore/{id}', 'restoreOne');

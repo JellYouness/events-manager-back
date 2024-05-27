@@ -5,7 +5,6 @@ namespace App\Models;
 class Event extends BaseModel
 {
     public static $cacheKey = 'events';
-    //protected $with = ['users'];
     protected $fillable = [
         'name',
         'date',

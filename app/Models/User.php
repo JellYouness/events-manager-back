@@ -27,7 +27,6 @@ class User extends BaseModel implements
   use MustVerifyEmail;
 
   public static $cacheKey = 'users';
-  protected $with =['events'];
   protected $fillable = [
     'name',
     'email',

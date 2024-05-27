@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class EventController extends CrudController
@@ -88,4 +90,62 @@ class EventController extends CrudController
 
         return response()->json(['message' => 'Event restored successfully']);
     }
+
+    public function readOwn(Request $request, $id)
+    {
+    $user = $request->user();
+
+    if (in_array('read_all', $this->restricted)) {
+      if (!$user->hasPermission($this->table, 'read') && !$user->hasPermission($this->table, 'read_own')) {
+        return response()->json([
+          'success' => false,
+          'errors' => [__('common.permission_denied')]
+        ]);
+      }
+    }
+
+    // Retrieve all items from cache if exists, otherwise retrieve from database
+    $items = $this->model()->where('user_id', $id)->get();
+
+    // If user has permission to read own items only, then filter the items
+    if (!$user->hasPermission($this->table, 'read')) {
+      $items = $items->filter(function ($model) use ($user) {
+        return $user->hasPermission($this->table, 'read', $model->id);
+      })->values();
+    }
+
+    return response()->json([
+      'success' => true,
+      'data' => ['items' => $items],
+    ]);
+  }
+
+    public function readRegistered(Request $request, $id)
+    {
+    $user = $request->user();
+
+    if (in_array('read_all', $this->restricted)) {
+      if (!$user->hasPermission($this->table, 'read') && !$user->hasPermission($this->table, 'read_own')) {
+        return response()->json([
+          'success' => false,
+          'errors' => [__('common.permission_denied')]
+        ]);
+      }
+    }
+
+    // Retrieve all items from cache if exists, otherwise retrieve from database
+    $items = User::find($id)->usersEvents;
+
+    // If user has permission to read own items only, then filter the items
+    if (!$user->hasPermission($this->table, 'read')) {
+      $items = $items->filter(function ($model) use ($user) {
+        return $user->hasPermission($this->table, 'read', $model->id);
+      })->values();
+    }
+
+    return response()->json([
+      'success' => true,
+      'data' => ['items' => $items],
+    ]);
+  }
 }

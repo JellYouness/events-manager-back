@@ -20,20 +20,23 @@ class EventController extends CrudController
             'max_participants' => 'required|integer',
             'image' => 'nullable|string',
             'is_canceled' => 'boolean',
+            'user_id' => 'integer'
     ];
 
     public function createOne(Request $request)
   {
+    $user = $request->user();
     $request->validate($this->rules);
     
     $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
-    $request->merge(['date' => $formattedDatetime]);
+    $request->merge(['date' => $formattedDatetime, 'user_id' => $user->id]);
 
     return parent::createOne($request);
   }
 
     public function updateOne($id,Request $request)
   {
+    
     $request->validate($this->rules);
 
     $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
@@ -44,7 +47,7 @@ class EventController extends CrudController
 
   public function readOne($id, Request $request)
   {
-    $item = Event::with('users:name')->find($id);
+    $item = Event::with('user:name,id')->find($id);
 
     if (!$item) {
       return response()->json([
@@ -60,7 +63,16 @@ class EventController extends CrudController
   }
 
     public function cancelOne(Request $request, $id)
-    {
+    {   
+        if (in_array('create', $this->restricted)) {
+            $user = $request->user();
+            if (!$user->hasPermission($this->table, 'cancel')) {
+                return response()->json([
+                'success' => false,
+                'errors' => [__('common.permission_denied')]
+                ]);
+            }
+        }
         $event = $this->modelClass::findOrFail($id);
 
         // Check if the event is already canceled
@@ -77,6 +89,15 @@ class EventController extends CrudController
 
     public function restoreOne(Request $request, $id)
     {
+        if (in_array('create', $this->restricted)) {
+            $user = $request->user();
+            if (!$user->hasPermission($this->table, 'cancel')) {
+                return response()->json([
+                'success' => false,
+                'errors' => [__('common.permission_denied')]
+                ]);
+            }
+        }
         $event = $this->modelClass::findOrFail($id);
 
         // Check if the event is already restored

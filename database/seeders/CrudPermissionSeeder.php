@@ -31,10 +31,10 @@ class CrudPermissionSeeder extends Seeder
     $userRole = $this->createRole('user');
     $adminRole = $this->createRole('admin');
 
-    $this->createScopePermissions('events', ['create', 'read', 'update', 'delete']);
+    $this->createScopePermissions('events', ['create', 'read', 'update', 'delete', 'cancel']);
 
-    $this->assignScopePermissionsToRole($adminRole, 'events', ['create', 'read', 'update', 'delete']);
-    $this->assignScopePermissionsToRole($userRole, 'events', ['create', 'read', 'update', 'delete']);
+    $this->assignScopePermissionsToRole($adminRole, 'events', ['create','read','cancel']);
+    $this->assignScopePermissionsToRole($userRole, 'events', ['create', 'read', ]);
   }
 
   public function createRole(string $name): Role

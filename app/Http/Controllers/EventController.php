@@ -216,7 +216,8 @@ class EventController extends CrudController
       }
     }
 
-    $items = Event::withCount('usersEvents as participants')->where('user_id', $id)->get();
+    $user = User::find($id);
+    $items = $user->usersEvents()->withCount('usersEvents as participants')->get();
 
     // If user has permission to read own items only, then filter the items
     if (!$user->hasPermission($this->table, 'read')) {

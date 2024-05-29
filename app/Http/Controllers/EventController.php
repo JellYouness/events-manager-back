@@ -23,6 +23,7 @@ class EventController extends CrudController
             'max_participants' => 'required|integer',
             'image' => 'nullable|string',
             'is_canceled' => 'boolean',
+            'is_registred' => 'boolean',
             'user_id' => 'integer'
     ];
 
@@ -45,6 +46,15 @@ class EventController extends CrudController
     $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
     $request->merge(['date' => $formattedDatetime]);
 
+    if($request->is_canceled){
+      $event = Event::find($id);
+      if(!$event->is_canceled){$users = DB::table('users_events')->where('event_id', $id)->join('users', 'users_events.user_id', '=', 'users.id')->select('users.*')->get();
+        foreach ($users as $user) {
+        Mail::to($user->email)->send(new CancelNotificationMail($user, $request));}
+      }
+      
+    }
+
     return parent::updateOne($id, $request);
   }
 
@@ -60,7 +70,11 @@ class EventController extends CrudController
       }
     }
 
-    $item = Event::with('user:name,id')->find($id);
+    $item = Event::with('user:name,id')->withCount('usersEvents as participants')->find($id);
+
+    if($item){
+      $item->is_registred = $item->usersEvents->contains('id', $request->user()->id);
+    }
 
     if (!$item) {
       return response()->json([

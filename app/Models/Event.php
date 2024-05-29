@@ -49,6 +49,7 @@ class Event extends BaseModel
             'max_participants' => 'required|integer',
             'image' => 'nullable|string',
             'is_canceled' => 'boolean',
+            'is_registred' => 'boolean',
             'user_id' => 'required|integer'
         ];
     }

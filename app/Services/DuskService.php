@@ -9,31 +9,32 @@ use Laravel\Dusk\Browser;
 
 class DuskService
 {
-  protected $driver;
-  protected $browser;
+    protected $driver;
 
-  public function __construct()
-  {
-    $port = env('DUSK_PORT', 9515);
-    $options = (new ChromeOptions())->addArguments([
-      '--disable-gpu',
-      '--headless',
-      '--no-sandbox',
-      '--window-size=768,1024',
-    ]);
+    protected $browser;
 
-    $this->driver = RemoteWebDriver::create('http://localhost:' . $port, DesiredCapabilities::chrome()->setCapability(ChromeOptions::CAPABILITY, $options));
+    public function __construct()
+    {
+        $port = env('DUSK_PORT', 9515);
+        $options = (new ChromeOptions())->addArguments([
+            '--disable-gpu',
+            '--headless',
+            '--no-sandbox',
+            '--window-size=768,1024',
+        ]);
 
-    $this->browser = new Browser($this->driver);
-  }
+        $this->driver = RemoteWebDriver::create('http://localhost:'.$port, DesiredCapabilities::chrome()->setCapability(ChromeOptions::CAPABILITY, $options));
 
-  public function visit($url)
-  {
-    $this->browser->visit($url);
-  }
+        $this->browser = new Browser($this->driver);
+    }
 
-  public function quit()
-  {
-    $this->browser->quit();
-  }
+    public function visit($url)
+    {
+        $this->browser->visit($url);
+    }
+
+    public function quit()
+    {
+        $this->browser->quit();
+    }
 }

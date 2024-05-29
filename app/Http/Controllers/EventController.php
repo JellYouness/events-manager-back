@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class EventController extends CrudController
@@ -69,6 +70,38 @@ class EventController extends CrudController
     return response()->json([
       'success' => true,
       'data' => ['item' => $item],
+    ]);
+  }
+
+  public function readAll(Request $request)
+  {
+    $user = $request->user();
+
+    if (in_array('read_all', $this->restricted)) {
+      if (!$user->hasPermission($this->table, 'read')) {
+        return response()->json([
+          'success' => false,
+          'errors' => [__('common.permission_denied')]
+        ]);
+      }
+    }
+
+    $items = Event::withCount('usersEvents as participants')->get();
+
+    // If user has permission to read own items only, then filter the items
+    if (!$user->hasPermission($this->table, 'read')) {
+      $items = $items->filter(function ($model) use ($user) {
+        return $user->hasPermission($this->table, 'read', $model->id);
+      })->values();
+    }
+
+    if (method_exists($this, 'afterReadAll')) {
+      $this->afterReadAll($items);
+    }
+
+    return response()->json([
+      'success' => true,
+      'data' => ['items' => $items],
     ]);
   }
 
@@ -149,8 +182,7 @@ class EventController extends CrudController
       }
     }
 
-    // Retrieve all items from cache if exists, otherwise retrieve from database
-    $items = $this->model()->where('user_id', $id)->get();
+    $items = Event::withCount('usersEvents as participants')->where('user_id', $id)->get();
 
     // If user has permission to read own items only, then filter the items
     if (!$user->hasPermission($this->table, 'read')) {
@@ -178,8 +210,7 @@ class EventController extends CrudController
       }
     }
 
-    // Retrieve all items from cache if exists, otherwise retrieve from database
-    $items = User::find($id)->usersEvents;
+    $items = Event::withCount('usersEvents as participants')->where('user_id', $id)->get();
 
     // If user has permission to read own items only, then filter the items
     if (!$user->hasPermission($this->table, 'read')) {

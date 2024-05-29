@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CancelNotificationMail;
 
 class EventController extends CrudController
 {
@@ -116,7 +118,7 @@ class EventController extends CrudController
                 ]);
             }
         }
-        $event = $this->modelClass::find($id);
+        $event = Event::with('usersEvents')->find($id);
 
         if (!$event) {
       return response()->json([
@@ -133,6 +135,10 @@ class EventController extends CrudController
         // Cancel the event
         $event->is_canceled = true;
         $event->save();
+
+        $users = DB::table('users_events')->where('event_id', $id)->join('users', 'users_events.user_id', '=', 'users.id')->select('users.*')->get();
+        foreach ($users as $user) {
+        Mail::to($user->email)->send(new CancelNotificationMail($user, $event));}
 
         return response()->json(['message' => 'Event canceled successfully']);
     }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ConfirmationMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -55,11 +57,13 @@ class AuthController extends Controller
       return response()->json(['success' => false, 'errors' => [__('auth.email_already_exists')]]);
     }
     $user = User::create([
+      'name' => $request->name,
       'email' => $request->email,
       'password' => Hash::make($request->password),
     ]);
     $user->assignRole('user');
     $token = $user->createToken('authToken', ['expires_in' => 60 * 24 * 30])->plainTextToken;
+    Mail::to($user->email)->send(new ConfirmationMail($user));
     return response()->json(['success' => true, 'data' => ['token' => $token], 'message' => __('auth.register_success')]);
   }
 

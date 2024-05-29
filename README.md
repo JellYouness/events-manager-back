@@ -1,5 +1,15 @@
 ## Getting Started
 
+# Installing
+
+- composer init & install via `composer install`
+
+- migrate db `php artisan migrate`
+
+- seed db `php artisan db:seed`
+
+- run the app `php artisan serve`
+
 # Tech Stack
 
 - Auth : Sanctum

@@ -14,5 +14,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/auth/disconnected', function () {
-  return __('auth.disconnected');
+    return __('auth.disconnected');
 })->name('auth.disconnected');

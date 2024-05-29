@@ -3,10 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class CancelNotificationMail extends Mailable
@@ -14,6 +11,7 @@ class CancelNotificationMail extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
+
     public $event;
 
     /**
@@ -27,13 +25,13 @@ class CancelNotificationMail extends Mailable
         $this->event = $event;
     }
 
-
-    public function build() {
+    public function build()
+    {
         return $this->view('emails.cancel')
-                    ->with([
-                        'username' => $this->user->name,
-                        'eventname' => $this->event->name,
-                        'date' => $this->event->date,
-                    ]);
+            ->with([
+                'username' => $this->user->name,
+                'eventname' => $this->event->name,
+                'date' => $this->event->date,
+            ]);
     }
 }

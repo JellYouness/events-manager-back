@@ -11,22 +11,22 @@ class LoginRequest extends FormRequest
      *
      * @return bool
      */
-  public function authorize()
-  {
-      return true;
-  }
+    public function authorize()
+    {
+        return true;
+    }
 
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, string>
      */
-  public function rules()
-  {
-      return [
-          'email' => 'required|email',
-          'password' => 'required',
-          'admin' => 'boolean',
-      ];
-  }
+    public function rules()
+    {
+        return [
+            'email' => 'required|email',
+            'password' => 'required',
+            'admin' => 'boolean',
+        ];
+    }
 }

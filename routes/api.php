@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\UserEventController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,88 +19,89 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('auth')->name('auth.')->group(function () {
-  Route::controller(AuthController::class)->group(function () {
-    Route::post('/login', 'login');
-    Route::post('/register', 'register');
-    Route::post('/request-password-reset', 'requestPasswordReset');
-    Route::post('/reset-password', 'resetPassword');
-    Route::get('/disconnected', function () {
-      return response()->json(['success' => false, 'errors' => [__('auth.disconnected')]]);
+    Route::controller(AuthController::class)->group(function () {
+        Route::post('/login', 'login');
+        Route::post('/register', 'register');
+        Route::post('/request-password-reset', 'requestPasswordReset');
+        Route::post('/reset-password', 'resetPassword');
+        Route::get('/disconnected', function () {
+            return response()->json(['success' => false, 'errors' => [__('auth.disconnected')]]);
+        });
     });
-  });
 });
 
 Route::middleware('auth:api')->group(function () {
-  Route::prefix('auth')->name('auth.')->group(function () {
-    Route::controller(AuthController::class)->group(function () {
-      Route::post('/me', 'me');
-      Route::post('/logout', 'logout');
+    Route::prefix('auth')->name('auth.')->group(function () {
+        Route::controller(AuthController::class)->group(function () {
+            Route::post('/me', 'me');
+            Route::post('/logout', 'logout');
+        });
     });
-  });
-  Route::prefix('users')->name('users.')->group(function () {
-    Route::controller(UserController::class)->group(function () {
-      Route::post('/', 'createOne');
-      Route::get('/{id}', 'readOne');
-      Route::get('/', 'readAll');
-      Route::put('/{id}', 'updateOne');
-      Route::delete('/{id}', 'deleteOne');
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::controller(UserController::class)->group(function () {
+            Route::post('/', 'createOne');
+            Route::get('/{id}', 'readOne');
+            Route::get('/', 'readAll');
+            Route::put('/{id}', 'updateOne');
+            Route::delete('/{id}', 'deleteOne');
+        });
     });
-  });
-  Route::prefix('events')->name('events.')->group(function () {
-    Route::controller(EventController::class)->group(function () {
-      Route::post('/', 'createOne');
-      Route::get('/{id}', 'readOne');
-      Route::get('/', 'readAll');
-      Route::get('/myevents/{id}', 'readOwn');
-      Route::get('/registered/{id}', 'readRegistered');
-      Route::put('/{id}', 'updateOne');
-      Route::put('/cancel/{id}', 'cancelOne');
-      Route::put('/restore/{id}', 'restoreOne');
-      Route::delete('/{id}', 'deleteOne');
+    Route::prefix('events')->name('events.')->group(function () {
+        Route::controller(EventController::class)->group(function () {
+            Route::post('/', 'createOne');
+            Route::get('/{id}', 'readOne');
+            Route::get('/', 'readAll');
+            Route::get('/myevents/{id}', 'readOwn');
+            Route::get('/registered/{id}', 'readRegistered');
+            Route::put('/{id}', 'updateOne');
+            Route::put('/cancel/{id}', 'cancelOne');
+            Route::put('/restore/{id}', 'restoreOne');
+            Route::delete('/{id}', 'deleteOne');
+        });
+        Route::controller(UserEventController::class)->group(function () {
+            Route::post('/register/{id}', 'register');
+            Route::post('/unregister/{id}', 'unregister');
+        });
+        Route::prefix('uploads')->name('uploads.')->group(function () {
+            Route::controller(UploadController::class)->group(function () {
+                Route::post('/', 'createOne');
+                Route::get('/{id}', 'readOne');
+                Route::get('/', 'readAll');
+                Route::post('/{id}', 'updateOne');
+                Route::delete('/{id}', 'deleteOne');
+            });
+        });
     });
-    Route::controller(UserEventController::class)->group(function () {
-      Route::post('/register/{id}', 'register');
-      Route::post('/unregister/{id}', 'unregister');
-    });
-  Route::prefix('uploads')->name('uploads.')->group(function () {
-    Route::controller(UploadController::class)->group(function () {
-      Route::post('/', 'createOne');
-      Route::get('/{id}', 'readOne');
-      Route::get('/', 'readAll');
-      Route::post('/{id}', 'updateOne');
-      Route::delete('/{id}', 'deleteOne');
-    });
-  });
-});
 });
 
 Route::get('/hello', function () {
-  return response()->json(['success' => true, 'data' => ['message' => 'Hello World!']]);
+    return response()->json(['success' => true, 'data' => ['message' => 'Hello World!']]);
 });
 
 Route::prefix('uploads')->name('uploads.')->group(function () {
-  Route::controller(UploadController::class)->group(function () {
-    Route::get('/image/{id}', 'readImage');
-  });
+    Route::controller(UploadController::class)->group(function () {
+        Route::get('/image/{id}', 'readImage');
+    });
 });
 
 Route::prefix('cloud')->name('cloud.')->group(function () {
-  Route::get('/{path}', function () {
-    $path = request()->path;
-    if (!Storage::disk('cloud')->exists($path)) {
-      return response()->json([
-        'message' => 'File not found'
-      ], 404);
-    }
-    return Storage::disk('cloud')->response($path);
-  })->where('path', '.*');
+    Route::get('/{path}', function () {
+        $path = request()->path;
+        if (! Storage::disk('cloud')->exists($path)) {
+            return response()->json([
+                'message' => 'File not found',
+            ], 404);
+        }
+
+        return Storage::disk('cloud')->response($path);
+    })->where('path', '.*');
 });
 
 if (config('app.debug')) {
-  Route::get('/cache/{key}', function ($key) {
-    return response()->json([
-      'success' => true,
-      'data' => Cache::get($key)
-    ]);
-  });
+    Route::get('/cache/{key}', function ($key) {
+        return response()->json([
+            'success' => true,
+            'data' => Cache::get($key),
+        ]);
+    });
 }

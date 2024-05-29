@@ -12,7 +12,7 @@ class EventSeeder extends Seeder
      *
      * @return void
      */
-     public function run()
+    public function run()
     {
         Event::firstOrCreate([
             'name' => 'Event 1',
@@ -22,7 +22,7 @@ class EventSeeder extends Seeder
             'max_participants' => 100,
             'image' => 'image1.jpg',
             'is_canceled' => false,
-            'user_id' => 2
+            'user_id' => 2,
         ]);
 
         Event::firstOrCreate([
@@ -33,7 +33,7 @@ class EventSeeder extends Seeder
             'max_participants' => 200,
             'image' => 'image2.jpg',
             'is_canceled' => false,
-            'user_id' => 1
+            'user_id' => 1,
         ]);
 
         Event::firstOrCreate([
@@ -44,9 +44,8 @@ class EventSeeder extends Seeder
             'max_participants' => 300,
             'image' => 'image3.jpg',
             'is_canceled' => true,
-            'user_id' => 1
+            'user_id' => 1,
         ]);
 
-        
     }
 }

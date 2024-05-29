@@ -2,144 +2,147 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CancelNotificationMail;
 use App\Models\Event;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\CancelNotificationMail;
 
 class EventController extends CrudController
 {
     protected $table = 'events';
+
     protected $modelClass = Event::class;
+
     protected $rules = [
         'name' => 'required|string',
-            'date' => 'required',
-            'location' => 'required|string',
-            'description' => 'required|string',
-            'max_participants' => 'required|integer',
-            'image' => 'nullable|string',
-            'is_canceled' => 'boolean',
-            'is_registred' => 'boolean',
-            'user_id' => 'integer'
+        'date' => 'required',
+        'location' => 'required|string',
+        'description' => 'required|string',
+        'max_participants' => 'required|integer',
+        'image' => 'nullable|string',
+        'is_canceled' => 'boolean',
+        'is_registred' => 'boolean',
+        'user_id' => 'integer',
     ];
 
     public function createOne(Request $request)
-  {
-    $user = $request->user();
-    $request->validate($this->rules);
-    
-    $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
-    $request->merge(['date' => $formattedDatetime, 'user_id' => $user->id]);
+    {
+        $user = $request->user();
+        $request->validate($this->rules);
 
-    return parent::createOne($request);
-  }
+        $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
+        $request->merge(['date' => $formattedDatetime, 'user_id' => $user->id]);
 
-    public function updateOne($id,Request $request)
-  {
-    
-    $request->validate($this->rules);
-
-    $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
-    $request->merge(['date' => $formattedDatetime]);
-
-    if($request->is_canceled){
-      $event = Event::find($id);
-      if(!$event->is_canceled){$users = DB::table('users_events')->where('event_id', $id)->join('users', 'users_events.user_id', '=', 'users.id')->select('users.*')->get();
-        foreach ($users as $user) {
-        Mail::to($user->email)->send(new CancelNotificationMail($user, $request));}
-      }
-      
+        return parent::createOne($request);
     }
 
-    return parent::updateOne($id, $request);
-  }
+    public function updateOne($id, Request $request)
+    {
 
-  public function readOne($id, Request $request)
-  {
-    if (in_array('read_one', $this->restricted)) {
-      $user = $request->user();
-      if (!$user->hasPermission($this->table, 'read', $id)) {
-        return response()->json([
-          'success' => false,
-          'errors' => [__('common.permission_denied')]
-        ]);
-      }
-    }
+        $request->validate($this->rules);
 
-    $item = Event::with('user:name,id')->withCount('usersEvents as participants')->find($id);
+        $formattedDatetime = Carbon::parse($request->date)->format('Y-m-d H:i:s');
+        $request->merge(['date' => $formattedDatetime]);
 
-    if($item){
-      $item->is_registred = $item->usersEvents->contains('id', $request->user()->id);
-    }
+        if ($request->is_canceled) {
+            $event = Event::find($id);
+            if (! $event->is_canceled) {
+                $users = DB::table('users_events')->where('event_id', $id)->join('users', 'users_events.user_id', '=', 'users.id')->select('users.*')->get();
+                foreach ($users as $user) {
+                    Mail::to($user->email)->send(new CancelNotificationMail($user, $request));
+                }
+            }
 
-    if (!$item) {
-      return response()->json([
-        'success' => false,
-        'errors' => [__(Str::of($this->table)->replace('_', '-') . '.not_found')]
-      ]);
         }
 
-    return response()->json([
-      'success' => true,
-      'data' => ['item' => $item],
-    ]);
-  }
+        return parent::updateOne($id, $request);
+    }
 
-  public function readAll(Request $request)
-  {
-    $user = $request->user();
+    public function readOne($id, Request $request)
+    {
+        if (in_array('read_one', $this->restricted)) {
+            $user = $request->user();
+            if (! $user->hasPermission($this->table, 'read', $id)) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [__('common.permission_denied')],
+                ]);
+            }
+        }
 
-    if (in_array('read_all', $this->restricted)) {
-      if (!$user->hasPermission($this->table, 'read')) {
+        $item = Event::with('user:name,id')->withCount('usersEvents as participants')->find($id);
+
+        if ($item) {
+            $item->is_registred = $item->usersEvents->contains('id', $request->user()->id);
+        }
+
+        if (! $item) {
+            return response()->json([
+                'success' => false,
+                'errors' => [__(Str::of($this->table)->replace('_', '-').'.not_found')],
+            ]);
+        }
+
         return response()->json([
-          'success' => false,
-          'errors' => [__('common.permission_denied')]
+            'success' => true,
+            'data' => ['item' => $item],
         ]);
-      }
     }
 
-    $items = Event::withCount('usersEvents as participants')->get();
+    public function readAll(Request $request)
+    {
+        $user = $request->user();
 
-    // If user has permission to read own items only, then filter the items
-    if (!$user->hasPermission($this->table, 'read')) {
-      $items = $items->filter(function ($model) use ($user) {
-        return $user->hasPermission($this->table, 'read', $model->id);
-      })->values();
+        if (in_array('read_all', $this->restricted)) {
+            if (! $user->hasPermission($this->table, 'read')) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [__('common.permission_denied')],
+                ]);
+            }
+        }
+
+        $items = Event::withCount('usersEvents as participants')->get();
+
+        // If user has permission to read own items only, then filter the items
+        if (! $user->hasPermission($this->table, 'read')) {
+            $items = $items->filter(function ($model) use ($user) {
+                return $user->hasPermission($this->table, 'read', $model->id);
+            })->values();
+        }
+
+        if (method_exists($this, 'afterReadAll')) {
+            $this->afterReadAll($items);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => ['items' => $items],
+        ]);
     }
-
-    if (method_exists($this, 'afterReadAll')) {
-      $this->afterReadAll($items);
-    }
-
-    return response()->json([
-      'success' => true,
-      'data' => ['items' => $items],
-    ]);
-  }
 
     public function cancelOne(Request $request, $id)
-    {   
+    {
         if (in_array('cancel', $this->restricted)) {
             $user = $request->user();
-            if (!$user->hasPermission($this->table, 'cancel')) {
+            if (! $user->hasPermission($this->table, 'cancel')) {
                 return response()->json([
-                'success' => false,
-                'errors' => [__('common.permission_denied')]
+                    'success' => false,
+                    'errors' => [__('common.permission_denied')],
                 ]);
             }
         }
         $event = Event::with('usersEvents')->find($id);
 
-        if (!$event) {
-      return response()->json([
-        'success' => false,
-        'errors' => [__(Str::of($this->table)->replace('_', '-') . '.not_found')]
-      ]);
-    }
+        if (! $event) {
+            return response()->json([
+                'success' => false,
+                'errors' => [__(Str::of($this->table)->replace('_', '-').'.not_found')],
+            ]);
+        }
 
         // Check if the event is already canceled
         if ($event->is_canceled) {
@@ -152,7 +155,8 @@ class EventController extends CrudController
 
         $users = DB::table('users_events')->where('event_id', $id)->join('users', 'users_events.user_id', '=', 'users.id')->select('users.*')->get();
         foreach ($users as $user) {
-        Mail::to($user->email)->send(new CancelNotificationMail($user, $event));}
+            Mail::to($user->email)->send(new CancelNotificationMail($user, $event));
+        }
 
         return response()->json(['message' => 'Event canceled successfully']);
     }
@@ -161,24 +165,24 @@ class EventController extends CrudController
     {
         if (in_array('cancel', $this->restricted)) {
             $user = $request->user();
-            if (!$user->hasPermission($this->table, 'cancel')) {
+            if (! $user->hasPermission($this->table, 'cancel')) {
                 return response()->json([
-                'success' => false,
-                'errors' => [__('common.permission_denied')]
+                    'success' => false,
+                    'errors' => [__('common.permission_denied')],
                 ]);
             }
         }
         $event = $this->modelClass::find($id);
 
-        if (!$event) {
-      return response()->json([
-        'success' => false,
-        'errors' => [__(Str::of($this->table)->replace('_', '-') . '.not_found')]
-      ]);
-    }
+        if (! $event) {
+            return response()->json([
+                'success' => false,
+                'errors' => [__(Str::of($this->table)->replace('_', '-').'.not_found')],
+            ]);
+        }
 
         // Check if the event is already restored
-        if (!$event->is_canceled) {
+        if (! $event->is_canceled) {
             return response()->json(['message' => 'Event is not canceled'], 400);
         }
 
@@ -191,58 +195,58 @@ class EventController extends CrudController
 
     public function readOwn(Request $request, $id)
     {
-    $user = $request->user();
+        $user = $request->user();
 
-    if (in_array('read_all', $this->restricted)) {
-      if (!$user->hasPermission($this->table, 'read') && !$user->hasPermission($this->table, 'read_own')) {
+        if (in_array('read_all', $this->restricted)) {
+            if (! $user->hasPermission($this->table, 'read') && ! $user->hasPermission($this->table, 'read_own')) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [__('common.permission_denied')],
+                ]);
+            }
+        }
+
+        $items = Event::withCount('usersEvents as participants')->where('user_id', $id)->get();
+
+        // If user has permission to read own items only, then filter the items
+        if (! $user->hasPermission($this->table, 'read')) {
+            $items = $items->filter(function ($model) use ($user) {
+                return $user->hasPermission($this->table, 'read', $model->id);
+            })->values();
+        }
+
         return response()->json([
-          'success' => false,
-          'errors' => [__('common.permission_denied')]
+            'success' => true,
+            'data' => ['items' => $items],
         ]);
-      }
     }
-
-    $items = Event::withCount('usersEvents as participants')->where('user_id', $id)->get();
-
-    // If user has permission to read own items only, then filter the items
-    if (!$user->hasPermission($this->table, 'read')) {
-      $items = $items->filter(function ($model) use ($user) {
-        return $user->hasPermission($this->table, 'read', $model->id);
-      })->values();
-    }
-
-    return response()->json([
-      'success' => true,
-      'data' => ['items' => $items],
-    ]);
-  }
 
     public function readRegistered(Request $request, $id)
     {
-    $user = $request->user();
+        $user = $request->user();
 
-    if (in_array('read_all', $this->restricted)) {
-      if (!$user->hasPermission($this->table, 'read') && !$user->hasPermission($this->table, 'read_own')) {
+        if (in_array('read_all', $this->restricted)) {
+            if (! $user->hasPermission($this->table, 'read') && ! $user->hasPermission($this->table, 'read_own')) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [__('common.permission_denied')],
+                ]);
+            }
+        }
+
+        $user = User::find($id);
+        $items = $user->usersEvents()->withCount('usersEvents as participants')->get();
+
+        // If user has permission to read own items only, then filter the items
+        if (! $user->hasPermission($this->table, 'read')) {
+            $items = $items->filter(function ($model) use ($user) {
+                return $user->hasPermission($this->table, 'read', $model->id);
+            })->values();
+        }
+
         return response()->json([
-          'success' => false,
-          'errors' => [__('common.permission_denied')]
+            'success' => true,
+            'data' => ['items' => $items],
         ]);
-      }
     }
-
-    $user = User::find($id);
-    $items = $user->usersEvents()->withCount('usersEvents as participants')->get();
-
-    // If user has permission to read own items only, then filter the items
-    if (!$user->hasPermission($this->table, 'read')) {
-      $items = $items->filter(function ($model) use ($user) {
-        return $user->hasPermission($this->table, 'read', $model->id);
-      })->values();
-    }
-
-    return response()->json([
-      'success' => true,
-      'data' => ['items' => $items],
-    ]);
-  }
 }

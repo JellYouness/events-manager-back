@@ -2,7 +2,7 @@
 
 return [
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Default Filesystem Disk
     |--------------------------------------------------------------------------
@@ -13,9 +13,9 @@ return [
     |
     */
 
-  'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'local'),
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
@@ -28,80 +28,80 @@ return [
     |
     */
 
-  'disks' => [
-    'local' => [
-      'driver' => 'local',
-      'root' => storage_path('app'),
-      'throw' => false,
+    'disks' => [
+        'local' => [
+            'driver' => 'local',
+            'root' => storage_path('app'),
+            'throw' => false,
+        ],
+        'seeds' => [
+            'driver' => 'local',
+            'root' => storage_path('app/seeds'),
+            'url' => env('API_URL').'/seeds',
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+        'cloud' => [
+            'driver' => 'local',
+            'root' => storage_path('app/cloud'),
+            'url' => env('API_URL').'/cloud',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+        's3' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+        ],
+        'stubs' => [
+            'driver' => 'local',
+            'root' => app_path('Console/stubs'),
+        ],
+        'migrations' => [
+            'driver' => 'local',
+            'root' => database_path('migrations'),
+        ],
+        'seeders' => [
+            'driver' => 'local',
+            'root' => database_path('seeders'),
+        ],
+        'models' => [
+            'driver' => 'local',
+            'root' => app_path('Models'),
+        ],
+        'controllers' => [
+            'driver' => 'local',
+            'root' => app_path('Http/Controllers'),
+        ],
+        'requests' => [
+            'driver' => 'local',
+            'root' => app_path('Http/Requests'),
+        ],
+        'routes' => [
+            'driver' => 'local',
+            'root' => base_path('routes'),
+        ],
+        'logs' => [
+            'driver' => 'local',
+            'root' => storage_path('logs'),
+        ],
+        'enums' => [
+            'driver' => 'local',
+            'root' => app_path('Enums'),
+        ],
+        'langs' => [
+            'driver' => 'local',
+            'root' => base_path('lang'),
+        ],
     ],
-    'seeds' => [
-      'driver' => 'local',
-      'root' => storage_path('app/seeds'),
-      'url' => env('API_URL') . '/seeds',
-      'visibility' => 'private',
-      'throw' => false,
-    ],
-    'cloud' => [
-      'driver' => 'local',
-      'root' => storage_path('app/cloud'),
-      'url' => env('API_URL') . '/cloud',
-      'visibility' => 'public',
-      'throw' => false,
-    ],
-    's3' => [
-      'driver' => 's3',
-      'key' => env('AWS_ACCESS_KEY_ID'),
-      'secret' => env('AWS_SECRET_ACCESS_KEY'),
-      'region' => env('AWS_DEFAULT_REGION'),
-      'bucket' => env('AWS_BUCKET'),
-      'url' => env('AWS_URL'),
-      'endpoint' => env('AWS_ENDPOINT'),
-      'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-      'throw' => false,
-    ],
-    'stubs' => [
-      'driver' => 'local',
-      'root' => app_path('Console/stubs'),
-    ],
-    'migrations' => [
-      'driver' => 'local',
-      'root' => database_path('migrations'),
-    ],
-    'seeders' => [
-      'driver' => 'local',
-      'root' => database_path('seeders'),
-    ],
-    'models' => [
-      'driver' => 'local',
-      'root' => app_path('Models'),
-    ],
-    'controllers' => [
-      'driver' => 'local',
-      'root' => app_path('Http/Controllers'),
-    ],
-    'requests' => [
-      'driver' => 'local',
-      'root' => app_path('Http/Requests'),
-    ],
-    'routes' => [
-      'driver' => 'local',
-      'root' => base_path('routes'),
-    ],
-    'logs' => [
-      'driver' => 'local',
-      'root' => storage_path('logs'),
-    ],
-    'enums' => [
-      'driver' => 'local',
-      'root' => app_path('Enums'),
-    ],
-    'langs' => [
-      'driver' => 'local',
-      'root' => base_path('lang'),
-    ],
-  ],
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Symbolic Links
     |--------------------------------------------------------------------------
@@ -112,8 +112,8 @@ return [
     |
     */
 
-  'links' => [
-    public_path('storage') => storage_path('app/public'),
-  ],
+    'links' => [
+        public_path('storage') => storage_path('app/public'),
+    ],
 
 ];

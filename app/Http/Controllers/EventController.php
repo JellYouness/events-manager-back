@@ -47,6 +47,16 @@ class EventController extends CrudController
 
   public function readOne($id, Request $request)
   {
+    if (in_array('read_one', $this->restricted)) {
+      $user = $request->user();
+      if (!$user->hasPermission($this->table, 'read', $id)) {
+        return response()->json([
+          'success' => false,
+          'errors' => [__('common.permission_denied')]
+        ]);
+      }
+    }
+
     $item = Event::with('user:name,id')->find($id);
 
     if (!$item) {
@@ -64,7 +74,7 @@ class EventController extends CrudController
 
     public function cancelOne(Request $request, $id)
     {   
-        if (in_array('create', $this->restricted)) {
+        if (in_array('cancel', $this->restricted)) {
             $user = $request->user();
             if (!$user->hasPermission($this->table, 'cancel')) {
                 return response()->json([
@@ -73,7 +83,14 @@ class EventController extends CrudController
                 ]);
             }
         }
-        $event = $this->modelClass::findOrFail($id);
+        $event = $this->modelClass::find($id);
+
+        if (!$event) {
+      return response()->json([
+        'success' => false,
+        'errors' => [__(Str::of($this->table)->replace('_', '-') . '.not_found')]
+      ]);
+    }
 
         // Check if the event is already canceled
         if ($event->is_canceled) {
@@ -89,7 +106,7 @@ class EventController extends CrudController
 
     public function restoreOne(Request $request, $id)
     {
-        if (in_array('create', $this->restricted)) {
+        if (in_array('cancel', $this->restricted)) {
             $user = $request->user();
             if (!$user->hasPermission($this->table, 'cancel')) {
                 return response()->json([
@@ -98,7 +115,14 @@ class EventController extends CrudController
                 ]);
             }
         }
-        $event = $this->modelClass::findOrFail($id);
+        $event = $this->modelClass::find($id);
+
+        if (!$event) {
+      return response()->json([
+        'success' => false,
+        'errors' => [__(Str::of($this->table)->replace('_', '-') . '.not_found')]
+      ]);
+    }
 
         // Check if the event is already restored
         if (!$event->is_canceled) {
